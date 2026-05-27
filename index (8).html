@@ -221,7 +221,7 @@ function renderQ(){
 }
 
 function saveA(){answers[current]=document.getElementById('answerInput').value;}
-function nextQ(){saveA();if(current<9){current++;renderQ();}else{showScreen('loading');setTimeout(finish,2000);}}
+function nextQ(){saveA();if(!answers[current].trim()){document.getElementById('answerInput').style.border='1px solid #e87060';return;}document.getElementById('answerInput').style.border='1px solid rgba(200,140,50,0.3)';if(current<9){current++;renderQ();}else{showScreen('loading');setTimeout(finish,2000);}}
 function prevQ(){saveA();current--;renderQ();}
 
 function scoreOne(text,qi){
