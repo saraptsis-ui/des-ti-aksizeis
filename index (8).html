@@ -269,7 +269,7 @@ async function finish(){
       answers:answers.join(' | '), user_id: uid
     });
     const timeoutPromise = new Promise((_,reject) => setTimeout(() => reject('timeout'), 15000));
-    await Promise.race([insertPromise, timeoutPromise]);
+   Promise.race([insertPromise, timeoutPromise]).catch(e=>console.log(e));
   } catch(e) {
     console.log('Save error:', e);
   }
