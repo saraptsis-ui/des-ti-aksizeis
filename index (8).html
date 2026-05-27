@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Δες τι αξίζεις</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#18120d;color:#f5e6c8;font-family:'Lato',sans-serif;min-height:100vh}
+.wrap{max-width:480px;margin:0 auto;padding:0 22px 80px}
+input:focus,textarea:focus{outline:none;border-color:#c8963e!important;background:rgba(200,140,50,0.08)!important}
+input::placeholder,textarea::placeholder{color:rgba(230,210,180,0.2)}
+textarea{resize:none}
+button:active{transform:scale(0.97)}
+button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:pointer}
+input{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+@keyframes flicker{0%,100%{opacity:1}50%{opacity:0.65}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fadeUp{animation:fadeUp 0.5s ease both}
+.screen{display:none}.screen.active{display:block}
+.btn{width:100%;border:none;border-radius:14px;padding:18px;background:linear-gradient(135deg,#c8963e,#a8722e);color:#18120d;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'Lato',sans-serif;margin-bottom:12px}
+.btn:disabled{background:rgba(200,140,50,0.12);color:rgba(200,140,50,0.3);cursor:default}
+.btn-ghost{width:100%;background:transparent;border:1px solid rgba(200,140,50,0.2);border-radius:12px;padding:16px;color:rgba(200,140,50,0.5);font-size:14px;cursor:pointer;font-family:'Lato',sans-serif;letter-spacing:1px;margin-bottom:12px}
+.gold-input{width:100%;background:rgba(200,140,50,0.05);border:1px solid rgba(200,140,50,0.3);border-radius:12px;padding:16px 18px;color:#f5e6c8;font-size:16px;font-family:'Lato',sans-serif;margin-bottom:16px}
+.label{display:block;font-size:11px;letter-spacing:3px;color:rgba(220,170,80,1);text-transform:uppercase;margin-bottom:8px}
+.err{color:#e87060;font-size:13px;margin-bottom:12px;text-align:center}
+.btn-ghost{color:rgba(200,140,50,0.8)!important}
+p,span,h1,h2{-webkit-font-smoothing:antialiased}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HOME -->
+<div id="home" class="screen active fadeUp" style="padding-top:100px;text-align:center">
+  <div style="font-size:34px;margin-bottom:28px;display:inline-block;filter:drop-shadow(0 0 18px rgba(200,140,50,0.8));animation:flicker 3s ease-in-out infinite">✦</div>
+  <h1 style="font-family:'Cormorant Garamond',serif;font-size:54px;font-weight:700;color:#f5e6c8;line-height:1.0;letter-spacing:-1.5px;margin-bottom:14px">Δες τι<br>αξίζεις</h1>
+  <p style="font-size:14px;color:rgba(240,220,180,0.7);line-height:1.8;margin-bottom:64px">Μερικές ερωτήσεις που αξίζει<br>να κάνεις στον εαυτό σου.</p>
+  <button class="btn" onclick="showScreen('candidate_intro')">Ξεκινάμε</button>
+  <button class="btn-ghost" onclick="showScreen('login')">Σύνδεση Συνεργάτη</button>
+  <p style="margin-top:8px;font-size:12px;color:rgba(230,210,180,0.3)">από τον Ανδρέας Σαραπτσής</p>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="screen" style="padding-top:80px">
+  <button onclick="showScreen('home')" style="background:transparent;border:none;color:rgba(200,140,50,0.4);font-size:13px;cursor:pointer;margin-bottom:32px;letter-spacing:1px">← Πίσω</button>
+  <h2 style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:#f5e6c8;margin-bottom:8px">Σύνδεση</h2>
+  <p style="font-size:14px;color:rgba(240,220,180,0.5);margin-bottom:36px">Μπες στον λογαριασμό σου</p>
+  <div id="loginErr" class="err" style="display:none"></div>
+  <label class="label">Email</label>
+  <input class="gold-input" type="email" id="loginEmail" placeholder="email@example.com" autocomplete="email" autocapitalize="none">
+  <label class="label">Κωδικός</label>
+  <input class="gold-input" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+  <button class="btn" id="loginBtn">Σύνδεση</button>
+  <button class="btn-ghost" onclick="showScreen('register')">Δεν έχω λογαριασμό</button>
+</div>
+
+<!-- REGISTER -->
+<div id="register" class="screen" style="padding-top:80px">
+  <button onclick="showScreen('login')" style="background:transparent;border:none;color:rgba(200,140,50,0.4);font-size:13px;cursor:pointer;margin-bottom:32px;letter-spacing:1px">← Πίσω</button>
+  <h2 style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:#f5e6c8;margin-bottom:8px">Εγγραφή</h2>
+  <p style="font-size:14px;color:rgba(240,220,180,0.5);margin-bottom:36px">Δημιούργησε τον λογαριασμό σου</p>
+  <div id="regErr" class="err" style="display:none"></div>
+  <label class="label">Πλήρες όνομα</label>
+  <input class="gold-input" type="text" id="regName" placeholder="π.χ. Γιώργος Παπαδόπουλος">
+  <label class="label">Email</label>
+  <input class="gold-input" type="email" id="regEmail" placeholder="email@example.com">
+  <label class="label">Κωδικός</label>
+  <input class="gold-input" type="password" id="regPass" placeholder="Τουλάχιστον 6 χαρακτήρες">
+  <button class="btn" id="regBtn">Εγγραφή</button>
+</div>
+
+<!-- CANDIDATE INTRO -->
+<div id="candidate_intro" class="screen" style="padding-top:80px;text-align:center">
+  <div style="font-size:13px;letter-spacing:3px;color:rgba(200,140,50,0.5);text-transform:uppercase;margin-bottom:48px">10 ερωτήσεις · ~5 λεπτά</div>
+  <h2 style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:#f5e6c8;line-height:1.3;margin-bottom:16px">Είσαι έτοιμος να είσαι<br>ειλικρινής με τον εαυτό σου;</h2>
+  <p style="font-size:15px;color:rgba(240,220,180,0.7);line-height:1.8;margin-bottom:48px">Δεν υπάρχουν σωστές ή λάθος απαντήσεις.<br>Μόνο η αλήθεια σου έχει αξία εδώ.</p>
+  <label class="label" style="text-align:left">Το όνομά σου</label>
+  <input class="gold-input" type="text" id="nameInput" placeholder="π.χ. Μαρία" oninput="checkName()">
+  <label class="label" style="text-align:left">Από ποιον συνεργάτη;</label>
+  <input class="gold-input" type="text" id="collabInput" placeholder="π.χ. Γιώργος">
+  <button class="btn" id="startBtn" disabled onclick="startQuestions()">Είμαι έτοιμος</button>
+  <button onclick="showScreen('home')" style="background:transparent;border:none;color:rgba(200,140,50,0.3);font-size:13px;cursor:pointer;letter-spacing:1px">← Πίσω</button>
+</div>
+
+<!-- QUESTIONS -->
+<div id="questions" class="screen" style="padding-top:44px">
+  <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+    <span id="qLabel" style="font-size:11px;letter-spacing:3px;color:rgba(200,140,50,0.45);text-transform:uppercase">Ερώτηση 1</span>
+    <span id="qCount" style="font-size:11px;letter-spacing:2px;color:rgba(200,140,50,0.38)">1 / 10</span>
+  </div>
+  <div style="height:2px;background:rgba(200,140,50,0.08);border-radius:2px;overflow:hidden;margin-bottom:48px">
+    <div id="progressFill" style="height:100%;width:10%;background:linear-gradient(90deg,#c8963e,#e8b86a);border-radius:2px;transition:width 0.4s ease"></div>
+  </div>
+  <p id="qNum" style="font-size:11px;letter-spacing:3px;color:rgba(200,140,50,0.48);text-transform:uppercase;margin-bottom:14px"></p>
+  <p id="qText" style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#f5e6c8;line-height:1.45;margin-bottom:28px"></p>
+  <textarea id="answerInput" rows="6" placeholder="Γράψε ειλικρινά..." style="width:100%;background:rgba(200,140,50,0.04);border:1px solid rgba(200,140,50,0.3);border-radius:12px;padding:16px 18px;color:#f5e6c8;font-size:15px;font-family:'Lato',sans-serif;line-height:1.7;margin-bottom:28px;display:block"></textarea>
+  <div style="display:flex;gap:12px">
+    <button id="prevBtn" class="btn-ghost" onclick="prevQ()" style="display:none;width:auto;padding:16px 22px;margin:0">←</button>
+    <button id="nextBtn" class="btn" onclick="nextQ()" style="margin:0">Επόμενο →</button>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="loading" class="screen" style="padding-top:150px;text-align:center">
+  <div style="width:44px;height:44px;border:2px solid rgba(200,140,50,0.15);border-top:2px solid #c8963e;border-radius:50%;animation:spin 1.2s linear infinite;margin:0 auto 28px"></div>
+  <p style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#f5e6c8;margin-bottom:10px">Αναλύουμε τις απαντήσεις σου...</p>
+  <p style="font-size:12px;color:rgba(200,140,50,0.35);letter-spacing:2px">Λίγα δευτερόλεπτα</p>
+</div>
+
+<!-- RESULTS -->
+<div id="results" class="screen" style="padding-top:56px">
+  <p style="font-size:11px;letter-spacing:3px;color:rgba(200,140,50,0.42);text-transform:uppercase;margin-bottom:8px">Τα αποτελέσματά σου</p>
+  <h2 id="resName" style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:700;color:#f5e6c8;margin-bottom:40px"></h2>
+  <div style="text-align:center;padding:36px 0;border-top:1px solid rgba(200,140,50,0.1);border-bottom:1px solid rgba(200,140,50,0.1);margin-bottom:40px">
+    <div id="scoreTotal" style="font-family:'Cormorant Garamond',serif;font-size:88px;font-weight:700;color:#c8963e;line-height:1;letter-spacing:-4px;filter:drop-shadow(0 0 30px rgba(200,140,50,0.4))">0</div>
+    <div style="font-size:11px;color:rgba(200,140,50,0.3);letter-spacing:3px;margin-top:10px">ΣΥΝΟΛΙΚΗ ΒΑΘΜΟΛΟΓΙΑ / 100</div>
+  </div>
+  <div id="criteriaList" style="margin-bottom:36px"></div>
+  <div style="background:rgba(200,140,50,0.04);border:1px solid rgba(200,140,50,0.1);border-radius:14px;padding:24px 20px;margin-bottom:16px">
+    <p style="font-size:11px;letter-spacing:3px;color:rgba(200,140,50,0.32);text-transform:uppercase;margin-bottom:12px">Ανάλυση</p>
+    <p id="analysisText" style="font-size:15px;color:rgba(240,220,180,0.7);line-height:1.85"></p>
+  </div>
+  <div id="recBox" style="border-radius:14px;padding:24px 20px;margin-bottom:32px;border:1px solid">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span id="recIcon" style="font-size:18px"></span>
+      <span id="recTitle" style="font-size:16px;font-weight:700"></span>
+    </div>
+    <p id="recText" style="font-size:14px;color:rgba(240,220,180,0.5);line-height:1.7"></p>
+  </div>
+  <div style="background:rgba(37,211,102,0.07);border:1px solid rgba(37,211,102,0.2);border-radius:14px;padding:24px 20px;margin-bottom:16px;text-align:center">
+    <p style="font-size:15px;color:rgba(240,220,180,0.8);line-height:1.7;margin-bottom:20px">Θέλεις να μιλήσεις με τον <strong>Ανδρέας Σαραπτσής</strong><br>για το επόμενο βήμα;</p>
+    <button onclick="openWA()" style="width:100%;background:linear-gradient(135deg,#25d366,#1aab52);border:none;border-radius:12px;padding:16px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'Lato',sans-serif">💬 Επικοινώνησε τώρα μέσω WhatsApp</button>
+  </div>
+  <button onclick="showScreen('home')" class="btn-ghost">Επιστροφή</button>
+</div>
+
+<!-- DASHBOARD (συνεργάτης) -->
+<div id="dashboard" class="screen" style="padding-top:44px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:36px">
+    <div>
+      <p style="font-size:11px;letter-spacing:3px;color:rgba(200,140,50,0.42);text-transform:uppercase;margin-bottom:4px">Καλώς ήρθες</p>
+      <h2 id="dashName" style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:#f5e6c8"></h2>
+    </div>
+    <button onclick="doLogout()" style="background:transparent;border:1px solid rgba(200,140,50,0.2);border-radius:8px;padding:8px 16px;color:rgba(200,140,50,0.5);font-size:12px;cursor:pointer;letter-spacing:1px">Έξοδος</button>
+  </div>
+  <div id="dashList"></div>
+</div>
+
+<!-- MANAGER DASHBOARD -->
+<div id="manager" class="screen" style="padding-top:44px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:36px">
+    <div>
+      <p style="font-size:11px;letter-spacing:3px;color:rgba(200,140,50,0.42);text-transform:uppercase;margin-bottom:4px">Manager</p>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:#f5e6c8">Ανδρέας Σαραπτσής</h2>
+    </div>
+    <button onclick="doLogout()" style="background:transparent;border:1px solid rgba(200,140,50,0.2);border-radius:8px;padding:8px 16px;color:rgba(200,140,50,0.5);font-size:12px;cursor:pointer;letter-spacing:1px">Έξοδος</button>
+  </div>
+  <div id="managerList"></div>
+</div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://osaycebwbfzksxhdcocw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_3APVR35iMarcPhtpVr6ShQ_Xi2823SW';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const WHATSAPP = "306944146316";
+const MANAGER_EMAIL = "saraptsis@gmail.com";
+
+const QUESTIONS = [
+  "Υπάρχει κάτι στη ζωή σου που θα ήθελες πολύ και δεν το έχεις αποκτήσει ακόμα — και γιατί;",
+  "Νιώθεις ότι η οικονομική σου κατάσταση σήμερα αντικατοπτρίζει την αξία σου και τις δυνατότητές σου;",
+  "Ποιος είναι ο ένας άνθρωπος για τον οποίο θα ήθελες να τα καταφέρεις — εκτός από τον εαυτό σου;",
+  "Αν τα χρήματα δεν ήταν πρόβλημα, τι θα άλλαζες πρώτο στη ζωή σου;",
+  "Έχεις νιώσει ποτέ ότι οι άλλοι προχωρούν και εσύ μένεις στάσιμος; Τι κάνεις με αυτό το συναίσθημα;",
+  "Τι θα έλεγες στον εαυτό σου σε 10 χρόνια αν δεν έκανες τώρα ένα βήμα;",
+  "Έχεις βρει την ευκαιρία που θα βοηθούσε εσένα και την οικογένειά σου να γίνεις οικονομικά ανεξάρτητος;",
+  "Αν μπορούσα να σου δείξω μία τέτοια ευκαιρία, θα ήθελες να αφιερώσεις χρόνο για να δεις τις λεπτομέρειες;",
+  "Πόσο χρόνο την ημέρα έχεις να επενδύσεις για να δημιουργήσεις επιπρόσθετο εισόδημα;",
+  "Είσαι έτοιμος — ή ακόμα ψάχνεις δικαιολογίες;"
+];
+
+const YES_SIGNALS=["ναι","έτοιμος","έτοιμη","σίγουρα","απολύτως","φυσικά","θα ξεκινήσω","θα το κάνω","αποφάσισα","ξεκινώ","προχωράω"];
+const EMOTION_WORDS=["αγαπ","οικογέν","παιδ","μητέρ","πατέρ","σύντροφ","γυναίκ","άντρ","όνειρ","ελπ","χαρ","υπερήφαν","αξίζ","πιστεύ","θέλ","μπορ","αλλαγ","ελευθερ","γονε","αδερφ","κίνητρ","φίλ"];
+const FAMILY_WORDS=["παιδ","οικογέν","γυναίκ","άντρ","μητέρ","πατέρ","γονε","αδερφ","σύντροφ","μωρ","γιο","κόρ","φίλ","αγαπημέν"];
+const GOAL_WORDS=["σπίτι","αυτοκίν","εισόδημ","χρήμα","οικονομ","ανεξάρτητ","ελεύθερ","καινούργ","νέο","ταξίδ","λογαριασμ","διακοπ"];
+const NO_SIGNALS=["δεν ξέρω","ίσως","μάλλον","δεν είμαι σίγουρ","δεν νομίζω","αδύνατο"];
+
+let current=0, answers=new Array(10).fill(""), candidateName="", collaborator="", currentUser=null;
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function checkName(){
+  document.getElementById('startBtn').disabled=!document.getElementById('nameInput').value.trim();
+}
+
+function startQuestions(){
+  candidateName=document.getElementById('nameInput').value.trim();
+  collaborator=document.getElementById('collabInput').value.trim()||"Άγνωστος";
+  current=0; answers=new Array(10).fill("");
+  renderQ(); showScreen('questions');
+}
+
+function renderQ(){
+  document.getElementById('qLabel').textContent='Ερώτηση '+(current+1);
+  document.getElementById('qCount').textContent=(current+1)+' / 10';
+  document.getElementById('progressFill').style.width=((current+1)/10*100)+'%';
+  document.getElementById('qNum').textContent='Ερώτηση '+(current+1);
+  document.getElementById('qText').textContent=QUESTIONS[current];
+  document.getElementById('answerInput').value=answers[current];
+  document.getElementById('prevBtn').style.display=current>0?'inline-block':'none';
+  document.getElementById('nextBtn').textContent=current===9?'Ολοκλήρωση':'Επόμενο →';
+}
+
+function saveA(){answers[current]=document.getElementById('answerInput').value;}
+function nextQ(){saveA();if(current<9){current++;renderQ();}else{showScreen('loading');setTimeout(finish,2000);}}
+function prevQ(){saveA();current--;renderQ();}
+
+function scoreOne(text,qi){
+  if(!text||text.trim().length===0)return 3;
+  const t=text.trim().toLowerCase();
+  if(qi===1){if(/όχι|δεν νιώθ|δεν αντικατοπτρίζ|χαμηλ|άδικ/.test(t))return 23;if(/ναι|ικανοποιημέν/.test(t))return 8;return 12;}
+  if(qi===0){const hg=/σπίτι|αυτοκίν|τραπεζικ|λογαριασμ|ταξίδ|χρήμα|εισόδημ|καινούργ|νέο|διακοπ/.test(t);const hf=FAMILY_WORDS.some(w=>t.includes(w));if(hg&&hf)return 25;if(hg)return 22;if(hf)return 20;}
+  if(qi===4){const hg=/σπίτι|αυτοκίν|ταξίδ|διακοπ|χρήμα|λογαριασμ|καινούργ|νέο|εισόδημ/.test(t);const hf=FAMILY_WORDS.some(w=>t.includes(w));if(hg&&hf)return 25;if(hg||hf)return 22;return 15;}
+  if(qi===6){if(/όχι|δεν έχ|δεν βρήκ/.test(t))return 22;if(/ναι|βρήκ/.test(t))return 18;return 14;}
+  if(qi===8){if(/πάνω από 4|[5-9]|10/.test(t))return 10;if(/[3-4]|τρεις|τέσσερις/.test(t))return 8;if(/[1-2]|μία|δύο/.test(t))return 5;return 3;}
+  const isShortYes=text.trim().length<30&&YES_SIGNALS.some(w=>t.includes(w));
+  if(isShortYes)return 22;
+  let score=10;
+  YES_SIGNALS.forEach(w=>{if(t.includes(w))score+=3;});
+  EMOTION_WORDS.forEach(w=>{if(t.includes(w))score+=2;});
+  const hg=GOAL_WORDS.some(w=>t.includes(w));const hf=FAMILY_WORDS.some(w=>t.includes(w));
+  if(hg)score+=5;if(hf)score+=6;if(hg&&hf)score+=4;
+  NO_SIGNALS.forEach(w=>{if(t.includes(w))score-=4;});
+  if(text.split(/\s+/).length>20)score+=2;
+  return Math.max(3,Math.min(25,score));
+}
+
+async function finish(){
+  const s=answers.map((a,i)=>scoreOne(a,i));
+  const emotional=Math.round((s[0]+s[2]+s[3])/3);
+  const decisive=Math.round((s[7]+s[9])/2);
+  const awareness=Math.round((s[1]+s[5])/2);
+  const motivation=Math.round((s[4]+s[6]+s[8])/3);
+  const total=emotional+decisive+awareness+motivation;
+  let rec,recText,analysis;
+  if(total>=65){rec={icon:"✦",title:"Είσαι έτοιμος!",color:"#c8963e",border:"rgba(200,140,50,0.35)",bg:"rgba(200,140,50,0.08)"};recText=candidateName+", είσαι έτοιμος να κάνεις το επόμενο βήμα.";analysis=candidateName+", οι απαντήσεις σου αποκαλύπτουν έναν άνθρωπο που ξέρει τι θέλει και είναι έτοιμος να δράσει.";}
+  else if(total>=40){rec={icon:"◎",title:"Χρειάζεσαι λίγο χρόνο",color:"#a89070",border:"rgba(168,144,112,0.3)",bg:"rgba(168,144,112,0.07)"};recText=candidateName+", υπάρχει δυναμική μέσα σου. Χρειάζεσαι λίγο ακόμα χρόνο.";analysis=candidateName+", οι απαντήσεις σου δείχνουν ενδιαφέρον με λίγη διστακτικότητα.";}
+  else{rec={icon:"○",title:"Δεν είναι η ώρα σου ακόμα",color:"#7a6a5a",border:"rgba(122,106,90,0.3)",bg:"rgba(122,106,90,0.07)"};recText=candidateName+", δεν είναι η ώρα σου ακόμα. Όταν νιώσεις έτοιμος, θα είμαστε εδώ.";analysis=candidateName+", οι απαντήσεις σου δείχνουν ότι χρειάζεσαι περισσότερο χρόνο.";}
+
+  // Get logged in user if any
+  const {data:{user}} = await sb.auth.getUser();
+  const uid = user ? user.id : null;
+
+  // Save to Supabase with timeout
+  try {
+    const insertPromise = sb.from('evaluations').insert({
+      candidate_name:candidateName, collaborator, total,
+      recommendation:rec.title, emotional_readiness:emotional,
+      decisiveness:decisive, self_awareness:awareness, motivation,
+      answers:answers.join(' | '), user_id: uid
+    });
+    const timeoutPromise = new Promise((_,reject) => setTimeout(() => reject('timeout'), 5000));
+    await Promise.race([insertPromise, timeoutPromise]);
+  } catch(e) {
+    console.log('Save error:', e);
+  }
+
+  document.getElementById('resName').textContent=candidateName;
+  document.getElementById('scoreTotal').textContent=total;
+  document.getElementById('analysisText').textContent=analysis;
+  const labels=[{label:'Συναισθηματική Ετοιμότητα',val:emotional},{label:'Αποφασιστικότητα',val:decisive},{label:'Αυτεπίγνωση',val:awareness},{label:'Κίνητρο',val:motivation}];
+  document.getElementById('criteriaList').innerHTML=labels.map(l=>`<div style="margin-bottom:20px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;color:rgba(240,220,180,0.55)">${l.label}</span><span style="font-size:13px;color:#c8963e;font-weight:600">${l.val}<span style="color:rgba(200,140,50,0.35);font-size:11px">/25</span></span></div><div style="height:3px;background:rgba(200,140,50,0.08);border-radius:2px;overflow:hidden"><div style="height:100%;width:${(l.val/25)*100}%;background:linear-gradient(90deg,#a8722e,#e8b86a);border-radius:2px"></div></div></div>`).join('');
+  const rb=document.getElementById('recBox');rb.style.background=rec.bg;rb.style.borderColor=rec.border;
+  document.getElementById('recIcon').textContent=rec.icon;document.getElementById('recIcon').style.color=rec.color;
+  document.getElementById('recTitle').textContent=rec.title;document.getElementById('recTitle').style.color=rec.color;
+  document.getElementById('recText').textContent=recText;
+  showScreen('results');
+}
+
+function openWA(){
+  const score=document.getElementById('scoreTotal').textContent;
+  const msg=encodeURIComponent(`Γεια σου! Μόλις συμπλήρωσα το ερωτηματολόγιο «Δες τι αξίζεις». Βαθμολογία: ${score}/100. — ${candidateName}`);
+  window.open(`https://wa.me/${WHATSAPP}?text=${msg}`,'_blank');
+}
+
+// AUTH
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const errEl=document.getElementById('loginErr');
+  errEl.style.display='none';
+  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){errEl.textContent='Λάθος email ή κωδικός';errEl.style.display='block';return;}
+  await loadUserDashboard(data.user);
+}
+
+async function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const pass=document.getElementById('regPass').value;
+  const errEl=document.getElementById('regErr');
+  errEl.style.display='none';
+  if(!name||!email||!pass){errEl.textContent='Συμπλήρωσε όλα τα πεδία';errEl.style.display='block';return;}
+  if(pass.length<6){errEl.textContent='Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες';errEl.style.display='block';return;}
+  const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name}}});
+  if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
+  await loadUserDashboard(data.user);
+}
+
+async function doLogout(){
+  await sb.auth.signOut();
+  showScreen('home');
+}
+
+async function loadUserDashboard(user){
+  currentUser=user;
+  if(user.email===MANAGER_EMAIL){
+    await loadManagerDashboard();
+  } else {
+    document.getElementById('dashName').textContent=user.user_metadata?.full_name||user.email;
+    await loadCollaboratorDashboard(user.id);
+    showScreen('dashboard');
+  }
+}
+
+async function loadCollaboratorDashboard(uid){
+  const el=document.getElementById('dashList');
+  el.innerHTML='<p style="color:rgba(200,140,50,0.4);text-align:center;margin-top:40px">Φορτώνει...</p>';
+  const {data}=await sb.from('evaluations').select('*').eq('user_id',uid).order('created_at',{ascending:false});
+  if(!data||!data.length){el.innerHTML='<p style="color:rgba(200,140,50,0.28);text-align:center;margin-top:80px">Δεν έχεις αξιολογήσεις ακόμα.</p>';return;}
+  el.innerHTML=`<p style="font-size:12px;color:rgba(200,140,50,0.3);letter-spacing:2px;margin-bottom:20px">${data.length} ΑΞΙΟΛΟΓΗΣΗ${data.length!==1?'ΕΙΣ':''}</p>`+
+  data.map((r,i)=>`<div style="background:rgba(200,140,50,0.04);border:1px solid rgba(200,140,50,0.1);border-radius:14px;padding:18px 20px;margin-bottom:12px;cursor:pointer" onclick="showEval(${i},'dash')">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div><p style="font-size:17px;color:#f5e6c8;font-weight:600;margin-bottom:4px">${r.candidate_name}</p><p style="font-size:12px;color:rgba(200,140,50,0.4)">${new Date(r.created_at).toLocaleDateString('el-GR')}</p></div>
+      <div style="font-size:30px;font-weight:700;color:#c8963e">${r.total}</div>
+    </div></div>`).join('');
+  window._dashData=data;
+}
+
+async function loadManagerDashboard(){
+  const el=document.getElementById('managerList');
+  el.innerHTML='<p style="color:rgba(200,140,50,0.4);text-align:center;margin-top:40px">Φορτώνει...</p>';
+  const {data}=await sb.from('evaluations').select('*').order('created_at',{ascending:false});
+  if(!data||!data.length){el.innerHTML='<p style="color:rgba(200,140,50,0.28);text-align:center;margin-top:80px">Δεν υπάρχουν αξιολογήσεις ακόμα.</p>';showScreen('manager');return;}
+  
+  // Group by collaborator
+  const byCollab={};
+  data.forEach(r=>{if(!byCollab[r.collaborator])byCollab[r.collaborator]=[];byCollab[r.collaborator].push(r);});
+  
+  el.innerHTML=`<p style="font-size:12px;color:rgba(200,140,50,0.3);letter-spacing:2px;margin-bottom:24px">${data.length} ΣΥΝΟΛΙΚΕΣ ΑΞΙΟΛΟΓΗΣΕΙΣ</p>`+
+  Object.entries(byCollab).map(([collab,evals])=>`
+    <div style="background:rgba(200,140,50,0.04);border:1px solid rgba(200,140,50,0.12);border-radius:14px;padding:18px 20px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <p style="font-size:16px;color:#f5e6c8;font-weight:600">${collab}</p>
+        <p style="font-size:12px;color:rgba(200,140,50,0.5)">${evals.length} αξιολογήσεις</p>
+      </div>
+      ${evals.map((r,i)=>`<div style="padding:10px 0;border-top:1px solid rgba(200,140,50,0.07);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="showMgrEval('${collab}',${i})">
+        <p style="font-size:14px;color:rgba(240,220,180,0.7)">${r.candidate_name}</p>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:18px;font-weight:700;color:#c8963e">${r.total}</span>
+          <button onclick="event.stopPropagation();openWAMgr('${r.candidate_name}','${r.total}')" style="background:linear-gradient(135deg,#25d366,#1aab52);border:none;border-radius:8px;padding:6px 12px;color:#fff;font-size:12px;cursor:pointer">WA</button>
+        </div>
+      </div>`).join('')}
+    </div>`).join('');
+  
+  window._mgrData=byCollab;
+  showScreen('manager');
+}
+
+function showEval(i,type){
+  const r=window._dashData[i];
+  showEvalDetail(r,'dashboard');
+}
+
+function showMgrEval(collab,i){
+  const r=window._mgrData[collab][i];
+  showEvalDetail(r,'manager');
+}
+
+function showEvalDetail(r,backScreen){
+  const answersList=r.answers?r.answers.split(' | '):[];
+  const el=document.getElementById(backScreen==='dashboard'?'dashList':'managerList');
+  el.innerHTML=`<button onclick="${backScreen==='dashboard'?'loadCollaboratorDashboard(currentUser.id)':'loadManagerDashboard()'}" style="background:transparent;border:none;color:rgba(200,140,50,0.4);font-size:13px;cursor:pointer;margin-bottom:28px;padding:0;letter-spacing:1px">← Πίσω</button>
+  <h2 style="font-size:28px;color:#f5e6c8;margin-bottom:4px">${r.candidate_name}</h2>
+  <p style="font-size:12px;color:rgba(200,140,50,0.35);margin-bottom:32px">${new Date(r.created_at).toLocaleDateString('el-GR')} · ${r.collaborator}</p>
+  <div style="text-align:center;padding:28px 0;border-top:1px solid rgba(200,140,50,0.1);border-bottom:1px solid rgba(200,140,50,0.1);margin-bottom:32px">
+    <div style="font-size:72px;font-weight:700;color:#c8963e;line-height:1">${r.total}</div>
+    <div style="font-size:11px;color:rgba(200,140,50,0.28);letter-spacing:3px;margin-top:8px">/ 100</div>
+  </div>
+  ${[{k:'emotional_readiness',l:'Συναισθηματική Ετοιμότητα'},{k:'decisiveness',l:'Αποφασιστικότητα'},{k:'self_awareness',l:'Αυτεπίγνωση'},{k:'motivation',l:'Κίνητρο'}].map(x=>`<div style="margin-bottom:18px"><div style="display:flex;justify-content:space-between;margin-bottom:7px"><span style="font-size:13px;color:rgba(240,220,180,0.55)">${x.l}</span><span style="font-size:13px;color:#c8963e">${r[x.k]}/25</span></div><div style="height:3px;background:rgba(200,140,50,0.08);border-radius:2px;overflow:hidden"><div style="height:100%;width:${(r[x.k]/25)*100}%;background:linear-gradient(90deg,#a8722e,#e8b86a);border-radius:2px"></div></div></div>`).join('')}
+  <p style="font-size:11px;letter-spacing:3px;color:rgba(200,140,50,0.3);text-transform:uppercase;margin:28px 0 20px">Απαντήσεις</p>
+  ${QUESTIONS.map((q,i)=>`<div style="margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid rgba(200,140,50,0.07)"><p style="font-size:12px;color:rgba(200,140,50,0.4);margin-bottom:8px;line-height:1.6">${q}</p><p style="font-size:14px;color:rgba(240,220,180,0.7);line-height:1.75">${answersList[i]||'—'}</p></div>`).join('')}
+  <button onclick="openWAMgr('${r.candidate_name}','${r.total}')" style="width:100%;background:linear-gradient(135deg,#25d366,#1aab52);border:none;border-radius:12px;padding:16px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Lato',sans-serif;margin-top:8px">💬 WhatsApp με τον ${r.candidate_name}</button>`;
+}
+
+function openWAMgr(name,total){
+  const msg=encodeURIComponent(`Γεια σου ${name}! Είδα τα αποτελέσματά σου (${total}/100) και θα ήθελα να μιλήσουμε.`);
+  window.open(`https://wa.me/${WHATSAPP}?text=${msg}`,'_blank');
+}
+
+// Check if already logged in
+sb.auth.onAuthStateChange(async(event,session)=>{
+  if(session?.user&&window.location.hash!=='#home'){
+    await loadUserDashboard(session.user);
+  }
+});
+
+// Mobile-friendly button listeners
+document.addEventListener('DOMContentLoaded', function() {
+  const loginBtn = document.getElementById('loginBtn');
+  if(loginBtn) {
+    loginBtn.addEventListener('click', doLogin);
+    loginBtn.addEventListener('touchend', function(e) { e.preventDefault(); doLogin(); });
+  }
+  const regBtn = document.getElementById('regBtn');
+  if(regBtn) {
+    regBtn.addEventListener('click', doRegister);
+    regBtn.addEventListener('touchend', function(e) { e.preventDefault(); doRegister(); });
+  }
+});
+</script>
+</body>
+</html>
