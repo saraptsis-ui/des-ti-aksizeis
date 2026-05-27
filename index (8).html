@@ -257,8 +257,8 @@ async function finish(){
   else{rec={icon:"○",title:"Δεν είναι η ώρα σου ακόμα",color:"#7a6a5a",border:"rgba(122,106,90,0.3)",bg:"rgba(122,106,90,0.07)"};recText=candidateName+", δεν είναι η ώρα σου ακόμα. Όταν νιώσεις έτοιμος, θα είμαστε εδώ.";analysis=candidateName+", οι απαντήσεις σου δείχνουν ότι χρειάζεσαι περισσότερο χρόνο.";}
 
   // Get logged in user if any
-  const {data:{user}} = await sb.auth.getUser();
-  const uid = user ? user.id : null;
+ 
+  const uid =  null;
 
   // Save to Supabase with timeout
   try {
